@@ -103,12 +103,12 @@ public class Global {
      *
      * @see #BUILD_NUM
      */
-    public final static String RELEASE_VERSION = "4.3.0b4";
+    public final static String RELEASE_VERSION = "4.4.0b4";
 
      /**
      * The date assigned to this version in the form (YYYY-MM-DD)
      */
-    public static final String CharGerDate = "(2020-08-07)";
+    public static final String CharGerDate = "(2026-02-16)";
 
     /**
      * The build number (e.g., the string " (678)") for developers and support.
@@ -126,7 +126,11 @@ public class Global {
      * Currently set to "CharGer"
      */
     public static final String EditorNameString = "CharGer";
-    public static final String copyrightNotice = "Copyright 1998-2020 by Harry S. Delugach";
+    public static final String copyrightNotice = "<html>"
+            + "Created and maintained by<br>"
+            + "Harry S. Delugach 1998 - 2020<br>"
+            + "Updates by Mahpara Saleem 2026"
+            + "</html>";
     /**
      * if false, then enables Global.info output and enables various
      * experimental menu items and operations.
@@ -170,7 +174,7 @@ public class Global {
 //========================================================================================
 //	 LOCAL PLATFORM CONFIGURATION ("platform" means whether Mac OS, Linux, Windows, etc.)
     public static final String LineSeparator = System.getProperty( "line.separator" );
-    public static final String imagePath = "images" + "/";
+    public static final String imagePath = "Images" + "/";
     /**
      * Key to use with shortcut commands; i.e., CNTL on PC, Cmd on Mac
      */

@@ -297,7 +297,8 @@ public class HubFrame extends JFrame implements ManagedWindow {
         CopyrightNotice.setLocation( new java.awt.Point( 10, 280 ) );
         CopyrightNotice.setVisible( true );
         CopyrightNotice.setFont( new java.awt.Font( "Arial", Font.PLAIN, 10 ) );
-        CopyrightNotice.setSize( new java.awt.Dimension( 255, 20 ) );
+        CopyrightNotice.setLocation(new java.awt.Point(10, 250));
+        CopyrightNotice.setSize(new java.awt.Dimension(255, 50));
 
         VersionInfo.setText( Global.EditorNameString + "   v" + Global.getChargerVersion() + " " + Global.CharGerDate );
         VersionInfo.setForeground( new java.awt.Color( 255, 255, 255 ) );
@@ -314,14 +315,14 @@ public class HubFrame extends JFrame implements ManagedWindow {
         GraphFolderLabel.setFont( new Font( "Arial", Font.BOLD, 11 ) );
         GraphFolderLabel.setSize( new java.awt.Dimension( 85, 20 ) );
 
-        EmailAddressLabel.setText( "delugach@uah.edu" );
-        EmailAddressLabel.setForeground( new java.awt.Color( 255, 255, 255 ) );
-        EmailAddressLabel.setLocation( new java.awt.Point( 10, 260 ) );
-        EmailAddressLabel.setVisible( true );
-        EmailAddressLabel.setFont( new java.awt.Font( "Arial", Font.PLAIN, 12 ) );
-        EmailAddressLabel.setSize( new java.awt.Dimension( 255, 20 ) );
+//        EmailAddressLabel.setText( "delugach@uah.edu" );
+//        EmailAddressLabel.setForeground( new java.awt.Color( 255, 255, 255 ) );
+//        EmailAddressLabel.setLocation( new java.awt.Point( 10, 260 ) );
+//        EmailAddressLabel.setVisible( true );
+//        EmailAddressLabel.setFont( new java.awt.Font( "Arial", Font.PLAIN, 12 ) );
+//        EmailAddressLabel.setSize( new java.awt.Dimension( 255, 20 ) );
 
-        WebAddressButton.setText( "concept.cs.uah.edu/charger-download.jsp" );
+        WebAddressButton.setText( "https://github.com/mahparaa/CharGer" );
         WebAddressButton.setHorizontalAlignment( JLabel.LEFT );
         WebAddressButton.setBackground( new java.awt.Color( 255, 255, 255 ) );
         WebAddressButton.setForeground( Global.chargerBlueColor );
@@ -332,10 +333,10 @@ public class HubFrame extends JFrame implements ManagedWindow {
         WebAddressButton.addActionListener( new java.awt.event.ActionListener() {
             public void actionPerformed( java.awt.event.ActionEvent e ) {
                 try {
-                    Desktop.getDesktop().browse( new java.net.URI( "http://concept.cs.uah.edu/charger-download.jsp" ) );
+                    Desktop.getDesktop().browse( new java.net.URI( "https://github.com/mahparaa/CharGer" ) );
                 } catch ( Exception ee ) {
                     CGUtil.showMessageDialog( hub,
-                            "Browser not enabled in this context. Go to \"http://concept.cs.uah.edu/charger-download.jsp\"." );
+                            "Browser not enabled in this context. Go to \"https://github.com/mahparaa/CharGer\"." );
                 }
             }
         } );
@@ -728,10 +729,10 @@ public class HubFrame extends JFrame implements ManagedWindow {
         JMenuItem goToManual = new JMenuItem( "Charger4 Manual" );
         goToManual.addActionListener( e -> {
             try {
-                Desktop.getDesktop().browse( new java.net.URI( "http://concept.cs.uah.edu/downloads/CharGer%20Manual.pdf" ) );
+                Desktop.getDesktop().browse( new java.net.URI( "https://github.com/mahparaa/CharGer" ) );
             } catch ( Exception ee ) {
                 CGUtil.showMessageDialog( hub,
-                        "Browser not enabled in this context. Go to \"http://concept.cs.uah.edu/downloads/CharGer%20Manual.pdf\"." );
+                        "Browser not enabled in this context. Go to \"https://github.com/mahparaa/CharGer\"." );
             }
         } );
         helpMenu.add( goToManual );
@@ -798,10 +799,10 @@ public class HubFrame extends JFrame implements ManagedWindow {
         aboutWebSiteButton.addActionListener( new java.awt.event.ActionListener() {
             public void actionPerformed( java.awt.event.ActionEvent e ) {
                 try {
-                    Desktop.getDesktop().browse( new java.net.URI( "http://concept.cs.uah.edu/charger-download.jsp" ) );
+                    Desktop.getDesktop().browse( new java.net.URI( "https://github.com/mahparaa/CharGer" ) );
                 } catch ( Exception ee ) {
                     CGUtil.showMessageDialog( hub,
-                            "Browser not enabled in this context. Go to \"http://concept.cs.uah.edu/charger-download.jsp\"." );
+                            "Browser not enabled in this context. Go to \"https://github.com/mahparaa/CharGer\"." );
                 }
             }
         } );

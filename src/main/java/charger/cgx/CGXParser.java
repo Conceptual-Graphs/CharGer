@@ -346,7 +346,7 @@ public class CGXParser extends DefaultHandler {
             CGUtil.showMessageDialog( null,
                     "<html>This is a Knowledge Capture Pro file!<br/>"
                     + "Please open with Knowledge Capture Pro<br/>"
-                    + "<a href=\"http://concept.cs.uah.edu/download-selector.jsp\">Click here for more info.</a></html>"
+                    + "<a href=\"https://github.com/mahparaa/CharGer\">Click here for more info.</a></html>"
             );
             return;
         }
