@@ -12,22 +12,22 @@ options {
 }
 
 PARSER_BEGIN(CGIFParser)
-package cgif.parser.javacc;
+package com.conceptualgraph.cgif.parser.javacc;
 
-import cgif.generate.NameGenerator;
-import cgif.parser.CGIFSubtypeException;
-import cgif.parser.CGIFVariableException;
+import com.conceptualgraph.cgif.generate.NameGenerator;
+import com.conceptualgraph.cgif.parser.CGIFSubtypeException;
+import com.conceptualgraph.cgif.parser.CGIFVariableException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import cgif.parser.CGIFParserHelper;
-import charger.Global;
-import charger.obj.Actor;
-import charger.obj.Graph;
-import charger.obj.Concept;
-import charger.obj.Relation;
-import charger.obj.Referent;
-import charger.obj.TypeLabel;
+import com.conceptualgraph.cgif.parser.CGIFParserHelper;
+import com.conceptualgraph.charger.Global;
+import com.conceptualgraph.charger.obj.Actor;
+import com.conceptualgraph.charger.obj.Graph;
+import com.conceptualgraph.charger.obj.Concept;
+import com.conceptualgraph.charger.obj.Relation;
+import com.conceptualgraph.charger.obj.Referent;
+import com.conceptualgraph.charger.obj.TypeLabel;
 import java.io.Reader;
 import java.util.ArrayList;
 
