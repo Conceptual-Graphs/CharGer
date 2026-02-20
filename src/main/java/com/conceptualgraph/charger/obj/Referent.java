@@ -6,7 +6,6 @@
 
 package com.conceptualgraph.charger.obj;
 
-import com.conceptualgraph.cgif.parser.javacc.CGIFParser;
 import com.conceptualgraph.cgif.parser.javacc.ParseException;
 import com.conceptualgraph.charger.Global;
 
