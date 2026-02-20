@@ -1,6 +1,5 @@
 package com.conceptualgraph.charger;
 
-import com.conceptualgraph.cgif.parser.javacc.CGIFParser;
 import com.conceptualgraph.cgif.parser.javacc.ParseException;
 import com.conceptualgraph.charger.db.DatabaseFrame;
 import com.conceptualgraph.charger.exception.*;
@@ -965,6 +964,7 @@ public class HubFrame extends JFrame implements ManagedWindow {
             try {
                  attempt = parser.parseCGIFString( contents );
             } catch ( ParseException ex ) {
+                System.out.println(ex);
                 JOptionPane.showMessageDialog( this, "Error in file " + cgifFile.getName() + "\n" + ex.getMessage(),
                         "CGIF Formation Error", JOptionPane.ERROR_MESSAGE );
                 return;

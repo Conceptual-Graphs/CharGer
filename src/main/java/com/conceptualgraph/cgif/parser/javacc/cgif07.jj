@@ -7,25 +7,27 @@
 options {
     STATIC = false;
     SANITY_CHECK = true;
-    DEBUG_PARSER = true;
+    DEBUG_PARSER = false;
+    UNICODE_INPUT = true;
 }
 
 PARSER_BEGIN(CGIFParser)
-package com.conceptualgraph.cgif.parser.javacc;
+package cgif.parser.javacc;
 
-import com.conceptualgraph.cgif.generate.NameGenerator;
-import com.conceptualgraph.cgif.parser.CGIFSubtypeException;
-import com.conceptualgraph.cgif.parser.CGIFVariableException;
+import cgif.generate.NameGenerator;
+import cgif.parser.CGIFSubtypeException;
+import cgif.parser.CGIFVariableException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import com.conceptualgraph.cgif.parser.CGIFParserHelper;
-import com.conceptualgraph.charger.Global;
-import com.conceptualgraph.charger.obj.Actor;
-import com.conceptualgraph.charger.obj.Graph;
-import com.conceptualgraph.charger.obj.Concept;
-import com.conceptualgraph.charger.obj.Relation;
-import com.conceptualgraph.charger.obj.Referent;
-import com.conceptualgraph.charger.obj.TypeLabel;
+import java.nio.charset.StandardCharsets;
+import cgif.parser.CGIFParserHelper;
+import charger.Global;
+import charger.obj.Actor;
+import charger.obj.Graph;
+import charger.obj.Concept;
+import charger.obj.Relation;
+import charger.obj.Referent;
+import charger.obj.TypeLabel;
 import java.io.Reader;
 import java.util.ArrayList;
 
@@ -33,15 +35,16 @@ public class CGIFParser {
     private CGIFParserHelper helper = new CGIFParserHelper();
     private Graph topGraph = new Graph();
 
-    public  Graph parseCGIFString( String contents ) throws ParseException {
-        InputStream is = new ByteArrayInputStream(contents.getBytes());
-        ReInit( is );
-        topLevelGraph( );
+    public Graph parseCGIFString(String contents) throws ParseException {
+        // Use UTF_8 to handle Unicode characters like Em-Dashes in comments
+        InputStream is = new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8));
+        ReInit(is);
+        topLevelGraph();
         return topGraph;
     }
 
     public void reset() {
-        this.ReInit( (Reader) null );
+        this.ReInit((Reader) null);
         topGraph.dispose();
         topGraph = new Graph();
         helper.referents.clear();
@@ -51,10 +54,13 @@ public class CGIFParser {
         return topGraph;
     }
 }
-
 PARSER_END(CGIFParser)
 
-SKIP : { " " | "\t" | "\n" | "\r" }
+/* WHITE SPACE & COMMENTS */
+SKIP : {
+  " " | "\t" | "\n" | "\r" | "\u00a0" // Added non-breaking space
+| <"%" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")> // Single line comment support
+}
 
 MORE : { "/*" : IN_MULTI_LINE_COMMENT }
 <IN_MULTI_LINE_COMMENT> SPECIAL_TOKEN : { <MULTI_LINE_COMMENT: "*/" > : DEFAULT }
@@ -79,17 +85,18 @@ TOKEN : {
 | < FLOATING_POINT_LITERAL: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"] >
 | < #EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >
 | < QUOTED_STRING: "\"" ( "\\" ~[] | ~["\"","\\"] )* "\"" >
-| < CHARACTER_LITERAL: "'" ( (~["'","\\","\n","\r"]) | ("\\" ( ["n","t","b","r","f","\\","'","\""] | ["0"-"7"] ( ["0"-"7"] )? | ["0"-"3"] ["0"-"7"] ["0"-"7"] )) ) "'" >
 }
 
 /* IDENTIFIERS */
 TOKEN : {
   < IDENTIFIER:  <LETTER> (<PART_LETTER>)* >
 | < #LETTER: [ "$", "A"-"Z", "_", "a"-"z" ] >
-| < #PART_LETTER: [ "\u0000"-"\u0008", "\u000e"-"\u001b", "$", "0"-"9", "A"-"Z", "_", "a"-"z", "-" ] >
+| < #PART_LETTER: [ "$", "0"-"9", "A"-"Z", "_", "a"-"z", "-", ":" ] >
 }
 
-void topLevelGraph() : {} { graph( null )<EOF> }
+void topLevelGraph() : {} {
+    [ <LBRACE> ] graph( null ) [ <RBRACE> ] <EOF>
+}
 
 Graph graph( Graph enclosingGraph ) : {
     Graph g;
@@ -110,7 +117,8 @@ void concept( Graph g ) :
     Graph graph = null;
 }
 {
-   LOOKAHEAD(3)
+    // 1. [TYPE: *ref] syntax
+    LOOKAHEAD(3)
     <LBRACKET> tType = <TYPE> <COLON> referent = referent() tBracket=<RBRACKET>
     {
         if (Global.importSubtypeRelationsAsHierarchy ) {
@@ -121,15 +129,23 @@ void concept( Graph g ) :
             concept = helper.makeConcept( g, "Type", referent, helper.extractChargerComment( tType, tBracket ) );
         }
     }
-|  LOOKAHEAD(4)
-  <LBRACKET>  tType = typelabel() [<COLON> referent = referent()] tBracket = <RBRACKET >
+|
+    // 2. Nested Graphs - Fixed choice conflict with LOOKAHEAD
+    LOOKAHEAD( <LBRACKET> (typelabel() <COLON>)? <LPAREN> )
+    <LBRACKET> [ tType = typelabel() <COLON> ] graph = graph( g ) tBracket = <RBRACKET >
     {
-        // FIX: The helper must link the referent (which contains the *x1 handle) to this concept
-        concept = helper.makeConcept( g, tType.image, referent, helper.extractChargerComment( tType, tBracket ) );
+        if ( tType != null ) graph.setTextLabel( tType.image.replace("\"", ""));
     }
-|   <LBRACKET> [tType = typelabel()  <COLON> ] graph = graph( g ) tBracket = <RBRACKET >
+|
+    // 3. Standard Concept - Optional colon and space support
+    <LBRACKET> tType = typelabel()
+    (
+        [ <COLON> ] referent = referent()
+    )?
+    tBracket = <RBRACKET >
     {
-        if ( tType != null ) graph.setTextLabel( tType.image );
+        String label = (tType.image == null) ? "" : tType.image.replace("\"", "");
+        concept = helper.makeConcept( g, label, referent, helper.extractChargerComment( tType, tBracket ) );
     }
 }
 
@@ -158,7 +174,6 @@ Referent referent() :
     {
         ref = new Referent();
         ref.setVariable("*" + t.image);
-        // FIX: Ensure the referent string is set to the variable handle for lookup
         ref.setReferentString("*" + t.image, false);
         return ref;
     }
@@ -170,8 +185,8 @@ Referent referent() :
     }
 |   t = <QUOTED_STRING>
     {
-        ref = new Referent(t.image);
-        ref.setReferentString(t.image, false);
+        ref = new Referent(t.image.replace("\"", ""));
+        ref.setReferentString(t.image.replace("\"", ""), false);
         return ref;
     }
 |   ( t = <INTEGER_LITERAL> | t = <FLOATING_POINT_LITERAL> )
@@ -194,12 +209,10 @@ void relation( Graph g ) :
 }
 { LOOKAHEAD(4)
    <LPAREN> rname = <SUBTYPE> <IDENTIFIER> <IDENTIFIER> rparen = <RPAREN>
-   { /* Subtype logic omitted for brevity, kept as per original */ }
 |   <LPAREN> rname = <IDENTIFIER>
     (
         r = referent()
         {
-            // FIX: This sends the handle (e.g. *x1) to the helper
             if ( r.getVariable() != null )
                 variables.add( r.getVariable() );
             else
@@ -209,7 +222,7 @@ void relation( Graph g ) :
     rparen = <RPAREN>
     {
         try {
-            relation = helper.makeRelation( g, rname.image, variables, helper.extractChargerComment( rname, rparen ) );
+            helper.makeRelation( g, rname.image, variables, helper.extractChargerComment( rname, rparen ) );
         } catch ( CGIFVariableException ex ) { Global.warning( "Error: " + ex.getMessage() ); }
     }
 }

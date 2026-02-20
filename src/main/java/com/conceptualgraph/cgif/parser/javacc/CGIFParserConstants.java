@@ -11,71 +11,69 @@ public interface CGIFParserConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int MULTI_LINE_COMMENT = 6;
+  int MULTI_LINE_COMMENT = 8;
   /** RegularExpression Id. */
-  int LBRACE = 8;
+  int LBRACE = 10;
   /** RegularExpression Id. */
-  int RBRACE = 9;
+  int RBRACE = 11;
   /** RegularExpression Id. */
-  int LPAREN = 10;
+  int LPAREN = 12;
   /** RegularExpression Id. */
-  int RPAREN = 11;
+  int RPAREN = 13;
   /** RegularExpression Id. */
-  int LBRACKET = 12;
+  int LBRACKET = 14;
   /** RegularExpression Id. */
-  int RBRACKET = 13;
+  int RBRACKET = 15;
   /** RegularExpression Id. */
-  int COLON = 14;
+  int COLON = 16;
   /** RegularExpression Id. */
-  int QUESTIONMARK = 15;
+  int QUESTIONMARK = 17;
   /** RegularExpression Id. */
-  int STAR = 16;
+  int STAR = 18;
   /** RegularExpression Id. */
-  int COMMA = 17;
+  int COMMA = 19;
   /** RegularExpression Id. */
-  int ATSIGN = 18;
+  int ATSIGN = 20;
   /** RegularExpression Id. */
-  int POUNDSIGN = 19;
+  int POUNDSIGN = 21;
   /** RegularExpression Id. */
-  int LESSTHAN = 20;
+  int LESSTHAN = 22;
   /** RegularExpression Id. */
-  int GREATERTHAN = 21;
+  int GREATERTHAN = 23;
   /** RegularExpression Id. */
-  int BAR = 22;
+  int BAR = 24;
   /** RegularExpression Id. */
-  int DOUBLEQUOTE = 23;
+  int DOUBLEQUOTE = 25;
   /** RegularExpression Id. */
-  int TYPE = 24;
+  int TYPE = 26;
   /** RegularExpression Id. */
-  int SUBTYPE = 25;
+  int SUBTYPE = 27;
   /** RegularExpression Id. */
-  int FORALL = 26;
+  int FORALL = 28;
   /** RegularExpression Id. */
-  int DIST = 27;
+  int DIST = 29;
   /** RegularExpression Id. */
-  int COLL = 28;
+  int COLL = 30;
   /** RegularExpression Id. */
-  int INTEGER_LITERAL = 29;
+  int INTEGER_LITERAL = 31;
   /** RegularExpression Id. */
-  int DECIMAL_LITERAL = 30;
+  int DECIMAL_LITERAL = 32;
   /** RegularExpression Id. */
-  int HEX_LITERAL = 31;
+  int HEX_LITERAL = 33;
   /** RegularExpression Id. */
-  int OCTAL_LITERAL = 32;
+  int OCTAL_LITERAL = 34;
   /** RegularExpression Id. */
-  int FLOATING_POINT_LITERAL = 33;
+  int FLOATING_POINT_LITERAL = 35;
   /** RegularExpression Id. */
-  int EXPONENT = 34;
+  int EXPONENT = 36;
   /** RegularExpression Id. */
-  int QUOTED_STRING = 35;
+  int QUOTED_STRING = 37;
   /** RegularExpression Id. */
-  int CHARACTER_LITERAL = 36;
+  int IDENTIFIER = 38;
   /** RegularExpression Id. */
-  int IDENTIFIER = 37;
+  int LETTER = 39;
   /** RegularExpression Id. */
-  int LETTER = 38;
-  /** RegularExpression Id. */
-  int PART_LETTER = 39;
+  int PART_LETTER = 40;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -89,9 +87,11 @@ public interface CGIFParserConstants {
     "\"\\t\"",
     "\"\\n\"",
     "\"\\r\"",
+    "\"\\u00a0\"",
+    "<token of kind 6>",
     "\"/*\"",
     "\"*/\"",
-    "<token of kind 7>",
+    "<token of kind 9>",
     "\"{\"",
     "\"}\"",
     "\"(\"",
@@ -120,7 +120,6 @@ public interface CGIFParserConstants {
     "<FLOATING_POINT_LITERAL>",
     "<EXPONENT>",
     "<QUOTED_STRING>",
-    "<CHARACTER_LITERAL>",
     "<IDENTIFIER>",
     "<LETTER>",
     "<PART_LETTER>",
