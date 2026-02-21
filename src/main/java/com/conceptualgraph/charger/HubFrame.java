@@ -292,7 +292,7 @@ public class HubFrame extends JFrame implements ManagedWindow {
         CGLabel.setSize( new java.awt.Dimension( 200, 20 ) );
 
 
-        CopyrightNotice.setText( Global.copyrightNotice );
+        CopyrightNotice.setText( "<html>" + Global.copyrightNotice + "</html>" );
         CopyrightNotice.setForeground( new java.awt.Color( 255, 255, 255 ) );
         CopyrightNotice.setLocation( new java.awt.Point( 10, 280 ) );
         CopyrightNotice.setVisible( true );

@@ -116,11 +116,11 @@ public class Global {
      * Currently set to "CharGer"
      */
     public static final String EditorNameString = "CharGer";
-    public static final String copyrightNotice = "<html>"
+    public static final String copyrightNotice = "<span>"
             + "Created and maintained by<br>"
-            + "Harry S. Delugach 1998 - 2020<br>"
-            + "Updates by Mahpara Saleem 2026"
-            + "</html>";
+            + " Harry S. Delugach 1998 - 2020<br>"
+            + " Updates by Mahpara Saleem 2026"
+            + "</span>";
     /**
      * if false, then enables Global.info output and enables various
      * experimental menu items and operations.
