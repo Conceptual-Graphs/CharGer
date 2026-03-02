@@ -10,6 +10,7 @@ import com.conceptualgraph.charger.gloss.AbstractTypeDescriptor;
 import com.conceptualgraph.charger.obj.*;
 import com.conceptualgraph.craft.Craft;
 import com.conceptualgraph.kb.matching.AbstractTupleMatcher;
+import com.conceptualgraph.kb.matching.BasicTupleMatcher;
 import com.conceptualgraph.repgrid.tracks.*;
 
 import java.awt.event.*;
@@ -242,6 +243,9 @@ public class KnowledgeManager {
         	com.conceptualgraph.charger.Global.error( "Class " + className + " couldn't be instantiated." );
         } catch ( IllegalAccessException iae ) {
         	com.conceptualgraph.charger.Global.error( "Class " + className + " couldn't be accessed." );
+        }
+        if ( matcher == null ) {
+            matcher = new BasicTupleMatcher();
         }
         return matcher;
     }
