@@ -22,13 +22,15 @@ package com.conceptualgraph.cgfca;
 
 import com.conceptualgraph.charger.EditFrame;
 import com.conceptualgraph.charger.Global;
-import com.conceptualgraph.charger.obj.Graph;
 import com.conceptualgraph.chargerlib.ManagedWindow;
 
+import java.awt.Component;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -58,34 +60,7 @@ public class CG_FCA_Window extends JFrame implements ManagedWindow {
             }
         } );
 
-        // Check if there are any open graphs
         refresh();
-
-        // If no graphs are open, prompt user to open one
-        if (editFrameList.getItemCount() == 0) {
-            int result = javax.swing.JOptionPane.showConfirmDialog(
-                    this,
-                    "No graphs are currently open.\n\nWould you like to open a graph?",
-                    "No com.conceptualgraph.Graphs Open",
-                    javax.swing.JOptionPane.YES_NO_OPTION
-            );
-
-            if (result == javax.swing.JOptionPane.YES_OPTION) {
-                // Open the file dialog
-                String filename = com.conceptualgraph.charger.Global.openGraphInNewFrame(null);
-                if (filename != null) {
-                    // Wait for EditFrame to be created, then refresh
-                    SwingUtilities.invokeLater(() -> {
-                        try {
-                            Thread.sleep(500);
-                            refresh();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                }
-            }
-        }
     }
 
     @Override
@@ -105,50 +80,26 @@ public class CG_FCA_Window extends JFrame implements ManagedWindow {
 
     public void refresh() {
         editFrameList.removeAllItems();
+        clearContent();
 
-        int count = 0;
-
-        // Try Global.editFrameList first
-        if (Global.editFrameList != null && Global.editFrameList.size() > 0) {
-            System.out.println("DEBUG: Using Global.editFrameList with " + Global.editFrameList.size() + " frames");
-
-            for (com.conceptualgraph.charger.EditFrame ef : Global.editFrameList.values()) {
-                System.out.println("DEBUG: Adding EditFrame from Global: " + ef.getTitle());
-                editFrameList.addItem(ef);
-                count++;
-            }
-        } else {
-            // Fallback to WindowManager
-            System.out.println("DEBUG: Global.editFrameList is empty, trying WindowManager");
-
-            java.util.ArrayList<com.conceptualgraph.chargerlib.ManagedWindow> allWindows = com.conceptualgraph.chargerlib.WindowManager.getManagedWindows();
-
-            for (com.conceptualgraph.chargerlib.ManagedWindow mw : allWindows) {
-                if (mw instanceof com.conceptualgraph.charger.EditFrame) {
-                    com.conceptualgraph.charger.EditFrame ef = (com.conceptualgraph.charger.EditFrame) mw;
-                    System.out.println("DEBUG: Adding EditFrame from WindowManager: " + ef.getTitle());
-                    editFrameList.addItem(ef);
-                    count++;
-                }
-            }
-        }
-
-        if (count == 0) {
-            System.out.println("DEBUG: No edit frames found anywhere!");
-            graphSelectedNameLabel.setText("No graphs open or selected");
-            cxtText.setText("No graphs open or selected");
-            graphReport.setText("No graphs open or selected");
-            this.editFrameList.setEnabled(true);
+        File folder = Global.GraphFolderFile;
+        if ( folder == null || !folder.exists() || !folder.isDirectory() ) {
+            graphSelectedNameLabel.setText( "Graph folder not configured" );
             return;
         }
 
-        System.out.println("DEBUG: Found " + count + " edit frames");
-
-        if (editFrameList.getItemCount() > 0) {
-            editFrameList.setSelectedIndex(0);
+        File[] cgxFiles = folder.listFiles( ( dir, name ) -> name.toLowerCase().endsWith( ".cgx" ) );
+        if ( cgxFiles == null || cgxFiles.length == 0 ) {
+            graphSelectedNameLabel.setText( "No .cgx files in folder: " + folder.getName() );
+            return;
         }
 
-        this.editFrameList.setEnabled(true);
+        Arrays.sort( cgxFiles );
+        for ( File f : cgxFiles ) {
+            editFrameList.addItem( f );
+        }
+
+        graphSelectedNameLabel.setText( "Select a graph from the list" );
     }
 
     /**
@@ -157,9 +108,9 @@ public class CG_FCA_Window extends JFrame implements ManagedWindow {
      */
     public void clearContent() {
         pf = null;
-        this.graphSelectedNameLabel.setText( "No graph selected");
-        this.cxtText.setText( "");
-        this.graphReport.setText( "");
+        this.graphSelectedNameLabel.setText( "No graph selected" );
+        this.cxtText.setText( "" );
+        this.graphReport.setText( "" );
     }
 
     /**
@@ -167,7 +118,6 @@ public class CG_FCA_Window extends JFrame implements ManagedWindow {
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
-    @SuppressWarnings("unchecked")
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
@@ -200,6 +150,17 @@ public class CG_FCA_Window extends JFrame implements ManagedWindow {
         getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 10, -1, 20));
 
         editFrameList.setMinimumSize(new java.awt.Dimension(250, 27));
+        editFrameList.setRenderer( new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent( JList<?> list, Object value, int index,
+                                                           boolean isSelected, boolean cellHasFocus ) {
+                super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
+                if ( value instanceof File ) {
+                    setText( ( (File) value ).getName() );
+                }
+                return this;
+            }
+        } );
         editFrameList.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editFrameListActionPerformed(evt);
@@ -280,28 +241,46 @@ public class CG_FCA_Window extends JFrame implements ManagedWindow {
     }
 
     private void editFrameListActionPerformed(java.awt.event.ActionEvent evt) {
-        // Get the selected EditFrame directly from the dropdown
-        EditFrame selectedFrame = (EditFrame) editFrameList.getSelectedItem();
+        File selectedFile = (File) editFrameList.getSelectedItem();
 
-        if (selectedFrame == null) {
-            graphSelectedNameLabel.setText("....No graph selected...");
-            cxtText.setText("");
-            graphReport.setText("");
+        if ( selectedFile == null ) {
+            clearContent();
             return;
         }
 
-        Graph graphSelected = selectedFrame.TheGraph;
-        String frameNameSelected = selectedFrame.getTitle();
+        // Find an already-open EditFrame for this file, or open it now
+        EditFrame editFrame = findEditFrameForFile( selectedFile );
+        if ( editFrame == null ) {
+            Global.openGraphInNewFrame( selectedFile.getAbsolutePath() );
+            editFrame = findEditFrameForFile( selectedFile );
+        }
 
-        graphSelectedNameLabel.setText(frameNameSelected);
-        cxtText.setText(frameNameSelected + System.getProperty("line.separator") + graphSelected.getBriefSummary());
+        if ( editFrame == null ) {
+            graphSelectedNameLabel.setText( "Could not open: " + selectedFile.getName() );
+            return;
+        }
 
-        pf = com.conceptualgraph.cgfca.CG_FCA.generateCGFCA(graphSelected);
-        pf.setFilename(frameNameSelected);
+        graphSelectedNameLabel.setText( selectedFile.getName() );
 
-        this.cxtText.setText(pf.getCxtContent());
-        this.graphReport.setText("Report on: " + frameNameSelected + System.getProperty("line.separator")
-                + System.getProperty("line.separator") + pf.getReportContent());
+        pf = CG_FCA.generateCGFCA( editFrame.TheGraph );
+        pf.setFilename( selectedFile.getAbsolutePath() );
+
+        this.cxtText.setText( pf.getCxtContent() );
+        this.graphReport.setText( "Report on: " + selectedFile.getName()
+                + System.getProperty( "line.separator" )
+                + System.getProperty( "line.separator" )
+                + pf.getReportContent() );
+    }
+
+    /** Finds an already-open EditFrame whose source file matches the given file. */
+    private EditFrame findEditFrameForFile( File file ) {
+        File target = file.getAbsoluteFile();
+        for ( EditFrame ef : Global.editFrameList.values() ) {
+            if ( ef.graphAbsoluteFile != null && ef.graphAbsoluteFile.equals( target ) ) {
+                return ef;
+            }
+        }
+        return null;
     }
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -334,24 +313,13 @@ public class CG_FCA_Window extends JFrame implements ManagedWindow {
     }
 
     private void openGraphButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        // This calls the same method HubFrame uses to open graphs
-        String filename = com.conceptualgraph.charger.Global.openGraphInNewFrame(null);
-        if (filename != null) {
-            // Give it a moment to create the EditFrame, then refresh
-            SwingUtilities.invokeLater(() -> {
-                try {
-                    Thread.sleep(500);
-                    refresh();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            });
-        }
+        Global.openGraphInNewFrame(null);
+        refresh();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JTextArea cxtText;
-    private javax.swing.JComboBox<EditFrame> editFrameList;
+    private javax.swing.JComboBox<File> editFrameList;
     public javax.swing.JCheckBox enableCorefs;
     private javax.swing.JButton exportButton;
     private javax.swing.JMenu fileMenu;

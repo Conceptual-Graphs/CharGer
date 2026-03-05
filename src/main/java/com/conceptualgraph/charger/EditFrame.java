@@ -394,6 +394,7 @@ public class EditFrame extends JFrame
         }
         repaint();
         requestFocus();
+        this.editFrameNum = Global.addEditFrame( this );
 
         //setEnabled( true );
     }
