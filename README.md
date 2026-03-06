@@ -1,7 +1,4 @@
 # CharGer
-Conceptual Graph Editor by Harry Delugach
+Conceptual Graph Editor by [Harry Delugach](https://www.uah.edu/science/departments/computer-science/faculty-staff//harry-delugach)
 
-Based on code supplied by Harry Delugach. From his [website](http://www.cs.uah.edu/~delugach/charger.php):
-
-
-CharGer is a conceptual graph editor and environment developed largely by Harry Delugach over a period of about twenty-five years. Versions are available for both macOS and Windows. 
+CharGer is a conceptual graph editor and environment developed by [Harry Delugach](https://www.uah.edu/science/departments/computer-science/faculty-staff//harry-delugach) between 1998 and 2020. Updated by [Mahpara Saleem](https://www.mahaztechenterprise.com/) since 2026.
