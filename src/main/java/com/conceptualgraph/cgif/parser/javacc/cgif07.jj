@@ -59,7 +59,7 @@ PARSER_END(CGIFParser)
 /* WHITE SPACE & COMMENTS */
 SKIP : {
   " " | "\t" | "\n" | "\r" | "\u00a0" // Added non-breaking space
-| <"%" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")> // Single line comment support
+| <"%" (~["\n", "\r"])* ("\n" | "\r" | "\r\n")?> // Single line comment support (newline optional at EOF)
 }
 
 MORE : { "/*" : IN_MULTI_LINE_COMMENT }
@@ -91,11 +91,11 @@ TOKEN : {
 TOKEN : {
   < IDENTIFIER:  <LETTER> (<PART_LETTER>)* >
 | < #LETTER: [ "$", "A"-"Z", "_", "a"-"z" ] >
-| < #PART_LETTER: [ "$", "0"-"9", "A"-"Z", "_", "a"-"z", "-", ":" ] >
+| < #PART_LETTER: [ "$", "0"-"9", "A"-"Z", "_", "a"-"z", "-", "." ] >
 }
 
 void topLevelGraph() : {} {
-    [ <LBRACE> ] graph( null ) [ <RBRACE> ] <EOF>
+    ( <LBRACE> graph( null ) <RBRACE> | graph( null ) ) <EOF>
 }
 
 Graph graph( Graph enclosingGraph ) : {
@@ -131,7 +131,7 @@ void concept( Graph g ) :
     }
 |
     // 2. Nested Graphs - Fixed choice conflict with LOOKAHEAD
-    LOOKAHEAD( <LBRACKET> (typelabel() <COLON>)? <LPAREN> )
+    LOOKAHEAD( <LBRACKET> (typelabel() <COLON>)? ( <LBRACKET> | <LPAREN> | <LESSTHAN> ) )
     <LBRACKET> [ tType = typelabel() <COLON> ] graph = graph( g ) tBracket = <RBRACKET >
     {
         if ( tType != null ) graph.setTextLabel( tType.image.replace("\"", ""));
@@ -149,9 +149,21 @@ void concept( Graph g ) :
     }
 }
 
-Token typelabel() : { Token first = null; }
+Token typelabel() : { Token first = null; Token next = null; StringBuilder sb = null; }
 {
-    first = <IDENTIFIER> { return first; }
+    // Unquoted, space-separated multi-word type label (e.g. Reference Solution Architecture: ...).
+    // Only taken when a colon eventually follows the run of identifiers, so single-word
+    // type labels without a colon (referent immediately following) are unaffected.
+    LOOKAHEAD( <IDENTIFIER> ( <IDENTIFIER> )+ <COLON> )
+    first = <IDENTIFIER> { sb = new StringBuilder( first.image ); }
+    ( next = <IDENTIFIER> { sb.append( ' ' ).append( next.image ); } )+
+    {
+        Token t = new Token();
+        t.image = sb.toString();
+        t.specialToken = first.specialToken;
+        return t;
+    }
+|   first = <IDENTIFIER> { return first; }
 |   first = <QUOTED_STRING> { return first; }
 |   { first = new Token(); first.image = ""; return first; }
 }
@@ -203,12 +215,19 @@ void relation( Graph g ) :
 {
     Token rname;
     Token rparen;
+    Token tSub;
+    Token tSuper;
     Relation relation = null;
     Referent r = null;
     ArrayList<String> variables = new ArrayList<String>();
 }
 { LOOKAHEAD(4)
-   <LPAREN> rname = <SUBTYPE> <IDENTIFIER> <IDENTIFIER> rparen = <RPAREN>
+   <LPAREN> rname = <SUBTYPE> tSub = <IDENTIFIER> tSuper = <IDENTIFIER> rparen = <RPAREN>
+    {
+        try {
+            helper.makeGenSpecLink( g, tSub.image, tSuper.image, helper.extractChargerComment( rname, rparen ) );
+        } catch ( CGIFSubtypeException ex ) { Global.warning( "Error: " + ex.getMessage() ); }
+    }
 |   <LPAREN> rname = <IDENTIFIER>
     (
         r = referent()
@@ -236,8 +255,16 @@ void actor( Graph g ) :
     ArrayList<String> outputvariables = new ArrayList<String>();
 }
 {
-  <LESSTHAN> aname = <IDENTIFIER> ( r = referent() { inputvariables.add( r.getVariable() ); } )+
-  <BAR> ( r = referent() { outputvariables.add( r.getVariable() ); } )+
+  <LESSTHAN> aname = <IDENTIFIER>
+  (
+      r = referent()
+      { inputvariables.add( r.getVariable() != null ? r.getVariable() : r.getReferentString() ); }
+  )+
+  <BAR>
+  (
+      r = referent()
+      { outputvariables.add( r.getVariable() != null ? r.getVariable() : r.getReferentString() ); }
+  )+
   rparen = <GREATERTHAN>
     {
         try {

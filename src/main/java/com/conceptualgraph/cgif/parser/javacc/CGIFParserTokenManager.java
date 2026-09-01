@@ -330,7 +330,11 @@ private int jjMoveNfa_0(int startState, int curPos)
                   else if (curChar == 46)
                      { jjCheckNAdd(9); }
                   else if (curChar == 37)
+                  {
+                     if (kind > 6)
+                        kind = 6;
                      { jjCheckNAddStates(10, 12); }
+                  }
                   if ((0x3fe000000000000L & l) != 0L)
                   {
                      if (kind > 31)
@@ -345,8 +349,11 @@ private int jjMoveNfa_0(int startState, int curPos)
                   }
                   break;
                case 1:
-                  if ((0xffffffffffffdbffL & l) != 0L)
-                     { jjCheckNAddStates(10, 12); }
+                  if ((0xffffffffffffdbffL & l) == 0L)
+                     break;
+                  if (kind > 6)
+                     kind = 6;
+                  { jjCheckNAddStates(10, 12); }
                   break;
                case 2:
                   if ((0x2400L & l) != 0L && kind > 6)
@@ -419,7 +426,7 @@ private int jjMoveNfa_0(int startState, int curPos)
                   { jjCheckNAdd(20); }
                   break;
                case 20:
-                  if ((0x7ff201000000000L & l) == 0L)
+                  if ((0x3ff601000000000L & l) == 0L)
                      break;
                   if (kind > 38)
                      kind = 38;
@@ -534,6 +541,8 @@ private int jjMoveNfa_0(int startState, int curPos)
                      { jjAddStates(25, 26); }
                   break;
                case 1:
+                  if (kind > 6)
+                     kind = 6;
                   { jjAddStates(10, 12); }
                   break;
                case 7:
@@ -640,8 +649,11 @@ private int jjMoveNfa_0(int startState, int curPos)
                      { jjCheckNAddStates(0, 2); }
                   break;
                case 1:
-                  if (jjCanMove_0(hiByte, i1, i2, l1, l2))
-                     { jjAddStates(10, 12); }
+                  if (!jjCanMove_0(hiByte, i1, i2, l1, l2))
+                     break;
+                  if (kind > 6)
+                     kind = 6;
+                  { jjAddStates(10, 12); }
                   break;
                default : if (i1 == 0 || l1 == 0 || i2 == 0 ||  l2 == 0) break; else break;
             }

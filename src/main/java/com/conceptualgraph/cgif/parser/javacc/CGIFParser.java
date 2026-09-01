@@ -46,21 +46,13 @@ public class CGIFParser implements CGIFParserConstants {
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case LBRACE:{
       jj_consume_token(LBRACE);
-      break;
-      }
-    default:
-      jj_la1[0] = jj_gen;
-      ;
-    }
-    graph(null);
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case RBRACE:{
+      graph(null);
       jj_consume_token(RBRACE);
       break;
       }
     default:
-      jj_la1[1] = jj_gen;
-      ;
+      jj_la1[0] = jj_gen;
+      graph(null);
     }
     jj_consume_token(0);
 }
@@ -78,7 +70,7 @@ public class CGIFParser implements CGIFParserConstants {
         break;
         }
       default:
-        jj_la1[2] = jj_gen;
+        jj_la1[1] = jj_gen;
         break label_1;
       }
       cgifTerm(g);
@@ -102,7 +94,7 @@ public class CGIFParser implements CGIFParserConstants {
       break;
       }
     default:
-      jj_la1[3] = jj_gen;
+      jj_la1[2] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -137,7 +129,7 @@ if (Global.importSubtypeRelationsAsHierarchy ) {
         break;
         }
       default:
-        jj_la1[4] = jj_gen;
+        jj_la1[3] = jj_gen;
         ;
       }
       graph = graph(g);
@@ -163,14 +155,14 @@ if ( tType != null ) graph.setTextLabel( tType.image.replace("\"", ""));
             break;
             }
           default:
-            jj_la1[5] = jj_gen;
+            jj_la1[4] = jj_gen;
             ;
           }
           referent = referent();
           break;
           }
         default:
-          jj_la1[6] = jj_gen;
+          jj_la1[5] = jj_gen;
           ;
         }
         tBracket = jj_consume_token(RBRACKET);
@@ -179,35 +171,58 @@ String label = (tType.image == null) ? "" : tType.image.replace("\"", "");
         break;
         }
       default:
-        jj_la1[7] = jj_gen;
+        jj_la1[6] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
     }
 }
 
-  final public Token typelabel() throws ParseException {Token first = null;
-    switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case IDENTIFIER:{
+  final public Token typelabel() throws ParseException {Token first = null; Token next = null; StringBuilder sb = null;
+    if (jj_2_3(2147483647)) {
       first = jj_consume_token(IDENTIFIER);
-{if ("" != null) return first;}
-      break;
+sb = new StringBuilder( first.image );
+      label_2:
+      while (true) {
+        next = jj_consume_token(IDENTIFIER);
+sb.append( ' ' ).append( next.image );
+        switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+        case IDENTIFIER:{
+          ;
+          break;
+          }
+        default:
+          jj_la1[7] = jj_gen;
+          break label_2;
+        }
       }
-    case QUOTED_STRING:{
-      first = jj_consume_token(QUOTED_STRING);
+Token t = new Token();
+        t.image = sb.toString();
+        t.specialToken = first.specialToken;
+        {if ("" != null) return t;}
+    } else {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case IDENTIFIER:{
+        first = jj_consume_token(IDENTIFIER);
 {if ("" != null) return first;}
-      break;
-      }
-    default:
-      jj_la1[8] = jj_gen;
+        break;
+        }
+      case QUOTED_STRING:{
+        first = jj_consume_token(QUOTED_STRING);
+{if ("" != null) return first;}
+        break;
+        }
+      default:
+        jj_la1[8] = jj_gen;
 first = new Token(); first.image = ""; {if ("" != null) return first;}
+      }
     }
     throw new Error("Missing return statement in function");
 }
 
   final public Referent referent() throws ParseException {Token t = null;
     Referent ref = null;
-    if (jj_2_3(2)) {
+    if (jj_2_4(2)) {
       jj_consume_token(QUESTIONMARK);
       t = jj_consume_token(IDENTIFIER);
 ref = new Referent();
@@ -277,21 +292,26 @@ ref = new Referent();
 
   final public void relation(Graph g) throws ParseException {Token rname;
     Token rparen;
+    Token tSub;
+    Token tSuper;
     Relation relation = null;
     Referent r = null;
     ArrayList<String> variables = new ArrayList<String>();
-    if (jj_2_4(4)) {
+    if (jj_2_5(4)) {
       jj_consume_token(LPAREN);
       rname = jj_consume_token(SUBTYPE);
-      jj_consume_token(IDENTIFIER);
-      jj_consume_token(IDENTIFIER);
+      tSub = jj_consume_token(IDENTIFIER);
+      tSuper = jj_consume_token(IDENTIFIER);
       rparen = jj_consume_token(RPAREN);
+try {
+            helper.makeGenSpecLink( g, tSub.image, tSuper.image, helper.extractChargerComment( rname, rparen ) );
+        } catch ( CGIFSubtypeException ex ) { Global.warning( "Error: " + ex.getMessage() ); }
     } else {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case LPAREN:{
         jj_consume_token(LPAREN);
         rname = jj_consume_token(IDENTIFIER);
-        label_2:
+        label_3:
         while (true) {
           r = referent();
 if ( r.getVariable() != null )
@@ -311,7 +331,7 @@ if ( r.getVariable() != null )
             }
           default:
             jj_la1[11] = jj_gen;
-            break label_2;
+            break label_3;
           }
         }
         rparen = jj_consume_token(RPAREN);
@@ -335,10 +355,10 @@ try {
     ArrayList<String> outputvariables = new ArrayList<String>();
     jj_consume_token(LESSTHAN);
     aname = jj_consume_token(IDENTIFIER);
-    label_3:
+    label_4:
     while (true) {
       r = referent();
-inputvariables.add( r.getVariable() );
+inputvariables.add( r.getVariable() != null ? r.getVariable() : r.getReferentString() );
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case LBRACE:
       case QUESTIONMARK:
@@ -352,14 +372,14 @@ inputvariables.add( r.getVariable() );
         }
       default:
         jj_la1[13] = jj_gen;
-        break label_3;
+        break label_4;
       }
     }
     jj_consume_token(BAR);
-    label_4:
+    label_5:
     while (true) {
       r = referent();
-outputvariables.add( r.getVariable() );
+outputvariables.add( r.getVariable() != null ? r.getVariable() : r.getReferentString() );
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case LBRACE:
       case QUESTIONMARK:
@@ -373,7 +393,7 @@ outputvariables.add( r.getVariable() );
         }
       default:
         jj_la1[14] = jj_gen;
-        break label_4;
+        break label_5;
       }
     }
     rparen = jj_consume_token(GREATERTHAN);
@@ -413,7 +433,7 @@ try {
     jj_consume_token(LBRACE);
     r = referent();
 ref.addSetMember( r );
-    label_5:
+    label_6:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case COMMA:{
@@ -422,7 +442,7 @@ ref.addSetMember( r );
         }
       default:
         jj_la1[16] = jj_gen;
-        break label_5;
+        break label_6;
       }
       jj_consume_token(COMMA);
       r = referent();
@@ -481,29 +501,32 @@ if ( card != null ) ref.setCardinality( card ); {if ("" != null) return ref;}
     finally { jj_save(3, xla); }
   }
 
-  private boolean jj_3R_typelabel_155_5_9()
+  private boolean jj_2_5(int xla)
  {
-    if (jj_scan_token(QUOTED_STRING)) return true;
-    return false;
+    jj_la = xla; jj_lastpos = jj_scanpos = token;
+    try { return (!jj_3_5()); }
+    catch(LookaheadSuccess ls) { return true; }
+    finally { jj_save(4, xla); }
   }
 
-  private boolean jj_3R_typelabel_154_5_7()
+  private boolean jj_3_4()
  {
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_typelabel_154_5_8()) {
-    jj_scanpos = xsp;
-    if (jj_3R_typelabel_155_5_9()) {
-    jj_scanpos = xsp;
-    if (jj_3R_typelabel_156_5_10()) return true;
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3R_typelabel_154_5_8()
- {
+    if (jj_scan_token(QUESTIONMARK)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  private boolean jj_3_5()
+ {
+    if (jj_scan_token(LPAREN)) return true;
+    if (jj_scan_token(SUBTYPE)) return true;
+    if (jj_scan_token(IDENTIFIER)) return true;
+    if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_typelabel_168_5_12()
+ {
     return false;
   }
 
@@ -512,8 +535,34 @@ if ( card != null ) ref.setCardinality( card ); {if ("" != null) return ref;}
     if (jj_scan_token(LBRACKET)) return true;
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_null_134_28_6()) jj_scanpos = xsp;
-    if (jj_scan_token(LPAREN)) return true;
+    if (jj_3R_null_134_28_7()) jj_scanpos = xsp;
+    xsp = jj_scanpos;
+    if (jj_scan_token(14)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(12)) {
+    jj_scanpos = xsp;
+    if (jj_scan_token(22)) return true;
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3_3()
+ {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    Token xsp;
+    if (jj_scan_token(38)) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_scan_token(38)) { jj_scanpos = xsp; break; }
+    }
+    if (jj_scan_token(COLON)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_typelabel_167_5_11()
+ {
+    if (jj_scan_token(QUOTED_STRING)) return true;
     return false;
   }
 
@@ -525,31 +574,51 @@ if ( card != null ) ref.setCardinality( card ); {if ("" != null) return ref;}
     return false;
   }
 
-  private boolean jj_3_3()
+  private boolean jj_3R_typelabel_166_5_10()
  {
-    if (jj_scan_token(QUESTIONMARK)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
-  private boolean jj_3_4()
+  private boolean jj_3R_typelabel_159_7_13()
  {
-    if (jj_scan_token(LPAREN)) return true;
-    if (jj_scan_token(SUBTYPE)) return true;
-    if (jj_scan_token(IDENTIFIER)) return true;
     if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
 
-  private boolean jj_3R_null_134_28_6()
+  private boolean jj_3R_null_134_28_7()
  {
-    if (jj_3R_typelabel_154_5_7()) return true;
+    if (jj_3R_typelabel_157_5_8()) return true;
     if (jj_scan_token(COLON)) return true;
     return false;
   }
 
-  private boolean jj_3R_typelabel_156_5_10()
+  private boolean jj_3R_typelabel_157_5_8()
  {
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_typelabel_157_5_9()) {
+    jj_scanpos = xsp;
+    if (jj_3R_typelabel_166_5_10()) {
+    jj_scanpos = xsp;
+    if (jj_3R_typelabel_167_5_11()) {
+    jj_scanpos = xsp;
+    if (jj_3R_typelabel_168_5_12()) return true;
+    }
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3R_typelabel_157_5_9()
+ {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    Token xsp;
+    if (jj_3R_typelabel_159_7_13()) return true;
+    while (true) {
+      xsp = jj_scanpos;
+      if (jj_3R_typelabel_159_7_13()) { jj_scanpos = xsp; break; }
+    }
     return false;
   }
 
@@ -572,12 +641,12 @@ if ( card != null ) ref.setCardinality( card ); {if ("" != null) return ref;}
 	   jj_la1_init_1();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0x400,0x800,0x405000,0x405000,0x10000,0x10000,0x80070400,0x4000,0x0,0x80000000,0x80040400,0x80060400,0x1000,0x80060400,0x80060400,0x60000,0x80000,0x100000,};
+	   jj_la1_0 = new int[] {0x400,0x405000,0x405000,0x10000,0x10000,0x80070400,0x4000,0x0,0x0,0x80000000,0x80040400,0x80060400,0x1000,0x80060400,0x80060400,0x60000,0x80000,0x100000,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x60,0x0,0x68,0x0,0x60,0x8,0x68,0x68,0x0,0x68,0x68,0x0,0x0,0x0,};
+	   jj_la1_1 = new int[] {0x0,0x0,0x0,0x60,0x0,0x68,0x0,0x40,0x60,0x8,0x68,0x68,0x0,0x68,0x68,0x0,0x0,0x0,};
 	}
-  final private JJCalls[] jj_2_rtns = new JJCalls[4];
+  final private JJCalls[] jj_2_rtns = new JJCalls[5];
   private boolean jj_rescan = false;
   private int jj_gc = 0;
 
@@ -839,7 +908,7 @@ if ( card != null ) ref.setCardinality( card ); {if ("" != null) return ref;}
 
   private void jj_rescan_token() {
 	 jj_rescan = true;
-	 for (int i = 0; i < 4; i++) {
+	 for (int i = 0; i < 5; i++) {
 	   try {
 		 JJCalls p = jj_2_rtns[i];
 
@@ -851,6 +920,7 @@ if ( card != null ) ref.setCardinality( card ); {if ("" != null) return ref;}
 			   case 1: jj_3_2(); break;
 			   case 2: jj_3_3(); break;
 			   case 3: jj_3_4(); break;
+			   case 4: jj_3_5(); break;
 			 }
 		   }
 		   p = p.next;
