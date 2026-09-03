@@ -95,6 +95,16 @@ public class CGIFParserHelper {
             } catch ( CGIFVariableException ex ) {
                 Logger.getLogger(CGIFParserHelper.class.getName() ).log( Level.SEVERE, null, ex );
             }
+        } else if ( refString != null && !refString.isEmpty() ) {
+            // No variable handle: also register under the literal referent (e.g. SAP_Graph)
+            // so relations/actors that reference the same constant value elsewhere in the
+            // file can find this concept, even though it's not a formal *x/?x coreference.
+            // First occurrence wins if the same literal is reused for multiple concepts.
+            try {
+                referents.putObjectByReferent( refString, concept );
+            } catch ( CGIFVariableException ex ) {
+                // literal already claimed by an earlier concept; leave that one as the link target
+            }
         }
 
         g.insertObject( concept );
@@ -141,6 +151,35 @@ public class CGIFParserHelper {
         g.insertObject( link );
     }
 
+    /**
+     * Resolves a relation/actor argument to the concept it refers to.
+     * A genuine coreference variable (*x or ?x) that isn't found is a real error.
+     * A bare literal (e.g. a constant name or an inline value with no prior concept
+     * declaration) is instead auto-vivified into an anonymous, untyped concept so the
+     * value is represented as a real node instead of being silently dropped. The same
+     * literal reused elsewhere resolves to that same anonymous concept.
+     */
+    private GraphObject resolveOrCreateReferent( Graph g, String var ) throws CGIFVariableException {
+        String lookupVar = var.startsWith( "?" ) ? var.replaceFirst( Pattern.quote( "?" ), "*" ) : var;
+        GraphObject go = referents.getObjectByReferent( lookupVar );
+        if ( go != null ) return go;
+
+        if ( var.startsWith( "*" ) || var.startsWith( "?" ) ) {
+            throw new CGIFVariableException( "Variable \"" + var + "\" not found." );
+        }
+
+        Concept concept = new Concept();
+        concept.setTypeLabel( "" );
+        concept.setReferent( unquotify( var ), false );
+        g.insertObject( concept );
+        try {
+            referents.putObjectByReferent( var, concept );
+        } catch ( CGIFVariableException ex ) {
+            // another concept claimed this literal between the lookup above and here; keep going
+        }
+        return concept;
+    }
+
     public Relation makeRelation( Graph g, String name, ArrayList<String> variables, String layout ) throws CGIFVariableException {
         Relation relation = new Relation();
         relation.setTextLabel( name );
@@ -150,26 +189,15 @@ public class CGIFParserHelper {
 
         int varnum = 0;
         for ( String var : variables ) {
-            String lookupVar = var;
             varnum++;
-
-            // Standardize ?x to *x for lookup
-            if ( var.startsWith( "?")) {
-                lookupVar = var.replaceFirst( Pattern.quote("?"), "*");
+            GraphObject go = resolveOrCreateReferent( g, var );
+            Arrow arc;
+            if ( varnum == variables.size() ) {
+                arc = new Arrow( relation, go );
+            } else {
+                arc = new Arrow( go, relation );
             }
-
-            GraphObject go = referents.getObjectByReferent( lookupVar );
-            if ( go == null )
-                throw new CGIFVariableException("Variable \"" + var + "\" not found.");
-            else {
-                Arrow arc;
-                if ( varnum == variables.size() ) {
-                    arc = new Arrow( relation, go );
-                } else {
-                    arc = new Arrow( go, relation );
-                }
-                g.insertObject( arc);
-            }
+            g.insertObject( arc);
         }
         return relation;
     }
@@ -182,16 +210,12 @@ public class CGIFParserHelper {
         g.insertObject( actor );
 
         for ( String var : inputvariables ) {
-            String lookupVar = var.startsWith("?") ? var.replaceFirst(Pattern.quote("?"), "*") : var;
-            GraphObject go = referents.getObjectByReferent( lookupVar );
-            if ( go == null ) throw new CGIFVariableException( "Variable \"" + var + "\" not found." );
+            GraphObject go = resolveOrCreateReferent( g, var );
             g.insertObject( new Arrow( go, actor ) );
         }
 
         for ( String var : outputvariables ) {
-            String lookupVar = var.startsWith("?") ? var.replaceFirst(Pattern.quote("?"), "*") : var;
-            GraphObject go = referents.getObjectByReferent( lookupVar );
-            if ( go == null ) throw new CGIFVariableException( "Variable \"" + var + "\" not found." );
+            GraphObject go = resolveOrCreateReferent( g, var );
             g.insertObject( new Arrow( actor, go ) );
         }
         return actor;
