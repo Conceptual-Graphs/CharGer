@@ -148,27 +148,18 @@ public class Concept extends GNode {
             referent.setReferentString( "");
             return;
         }
-        // parse the type label
-        StringTokenizer typeTokenizer = new StringTokenizer( textLabel, ":" );
-        
-//        typeLabel = typeTokenizer.nextToken();
-                // doesn't currently change anything because colon is the only excluded character.
-        typeLabel = General.excludeChars( typeTokenizer.nextToken(), CharacterSets.TYPE_LABEL_EXCLUDED_CHARS );
-//        int tokensLeft = typeTokenizer.countTokens();
-//        if ( tokensLeft > 1) {
-//            // there's a colon in the referent
-//        }
-//        typeLabel = General.makeLegalChars( typeTokenizer.nextToken(), CharacterSets.TYPE_LABEL_CHARSET );
-
-        // collect the rest; if there's a colon ":" in the label, be sure to insert it.
-        StringBuilder referentString = new StringBuilder( "" );
-        while ( typeTokenizer.hasMoreTokens() ) {
-            referentString = referentString.append( typeTokenizer.nextToken().trim() );
-            if ( typeTokenizer.countTokens() > 0 ) {
-                referentString.append( ":" );
-            }
+        // parse the type label: split on the FIRST colon only, so a blank type
+        // (e.g. "textLabel" == ": some referent", used for untyped/auto-vivified
+        // concepts) is preserved as an empty type rather than being swallowed into
+        // the referent by StringTokenizer's skipping of the empty leading token.
+        int colonIndex = textLabel.indexOf( ':' );
+        if ( colonIndex < 0 ) {
+            typeLabel = General.excludeChars( textLabel, CharacterSets.TYPE_LABEL_EXCLUDED_CHARS );
+            referent.setReferentString( "" );
+        } else {
+            typeLabel = General.excludeChars( textLabel.substring( 0, colonIndex ), CharacterSets.TYPE_LABEL_EXCLUDED_CHARS );
+            referent.setReferentString( textLabel.substring( colonIndex + 1 ).trim() );
         }
-        referent.setReferentString( referentString.toString() );
 //        referent.setReferentString( Util.makeLegalChars( referentString.toString(), CharacterSets.REFERENT_CHARSET ));   // hsd 1-19-17
         refDone = true;
     }

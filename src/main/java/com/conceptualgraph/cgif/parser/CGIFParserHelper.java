@@ -81,14 +81,23 @@ public class CGIFParserHelper {
         // FIX: Use the Type (e.g. "SAP Graph") as the primary label
         concept.setTypeLabel( unquotify( type ) );
 
-        // FIX: Only set referent if it's not just a variable handle
-        String refString = referent.getReferentString();
+        // A concept written with no referent at all -- "[Type_Label]" -- is merely
+        // shorthand for the generic concept "[Type_Label: *]", so a missing referent
+        // is a generic referent, not an error. The grammar leaves it null in that
+        // case, so guard rather than dereference.
+        String refString = ( referent == null ) ? null : referent.getReferentString();
         if (refString != null && !refString.startsWith("*")) {
             concept.setReferent( unquotify( refString ), false );
         }
 
+        // setTypeLabel/setReferent above don't resize the box (they only resize once
+        // the concept has an owner graph and frame, which isn't true yet during parsing),
+        // so the box stays at CharGer's fixed default size regardless of label length.
+        // Explicitly size it to fit the label now.
+        concept.resizeIfNecessary();
+
         // REGISTER the variable handle (e.g., *x8) so relations can find this node
-        String varHandle = referent.getVariable();
+        String varHandle = ( referent == null ) ? null : referent.getVariable();
         if ( varHandle != null ) {
             try {
                 referents.putObjectByReferent( varHandle, concept);
@@ -115,6 +124,7 @@ public class CGIFParserHelper {
     public void makeTypeLabel( Graph g,  String type, String layout )  throws CGIFSubtypeException {
         TypeLabel typelabel = new TypeLabel();
         typelabel.setTypeLabel( type );
+        typelabel.resizeIfNecessary();
         Iterator<GraphObject> iter = new DeepIterator( g, GraphObject.Kind.GNODE );
 
         boolean found = false;
@@ -171,6 +181,7 @@ public class CGIFParserHelper {
         Concept concept = new Concept();
         concept.setTypeLabel( "" );
         concept.setReferent( unquotify( var ), false );
+        concept.resizeIfNecessary();
         g.insertObject( concept );
         try {
             referents.putObjectByReferent( var, concept );
